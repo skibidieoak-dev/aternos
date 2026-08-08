@@ -167,8 +167,8 @@ async def status(ctx: commands.Context):
         await ctx.send("Não foi possível consultar o servidor. Consulte os logs do Render.")
 
 
-def validate_environment() -> None:
-    missing = [
+def missing_environment_variables() -> list[str]:
+    return [
         name
         for name, value in {
             "DISCORD_TOKEN": DISCORD_TOKEN,
@@ -178,15 +178,29 @@ def validate_environment() -> None:
         }.items()
         if not value
     ]
+
+
+def run_discord_bot() -> None:
+    missing = missing_environment_variables()
     if missing:
-        raise RuntimeError("Variáveis ausentes: " + ", ".join(missing))
+        logger.error("Bot não iniciado. Variáveis ausentes: %s", ", ".join(missing))
+        return
+
+    try:
+        logger.info("Iniciando conexão com o Gateway do Discord")
+        bot.run(DISCORD_TOKEN)
+    except Exception:
+        logger.exception("Falha na conexão do bot com o Discord")
 
 
 if __name__ == "__main__":
-    try:
-        validate_environment()
-        keep_alive()
-        bot.run(DISCORD_TOKEN)
-    except Exception:
-        logger.exception("Falha fatal na inicialização")
-        raise
+    discord_thread = threading.Thread(
+        target=run_discord_bot,
+        name="discord-bot",
+        daemon=True,
+    )
+    discord_thread.start()
+
+    # O processo principal permanece dedicado ao Web Service do Render.
+    # Assim / e /health continuam respondendo mesmo durante uma falha do Discord.
+    run_flask()
