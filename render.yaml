@@ -1,0 +1,28 @@
+services:
+  - type: web
+    name: aternos-bot
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python bot.py
+    envVars:
+      - key: DISCORD_TOKEN
+        sync: false
+      - key: ATERNOS_USER
+        sync: false
+      - key: ATERNOS_PASSWORD
+        sync: false
+      - key: ATERNOS_SERVER_ADDRESS
+        sync: false
+
+  - type: cron
+    name: aternos-bot-ping
+    env: python
+    schedule: "*/5 * * * *"
+    buildCommand: pip install requests
+    startCommand: python ping.py
+    envVars:
+      - key: RENDER_EXTERNAL_URL
+        fromService:
+          type: web
+          name: aternos-bot
+          envVarKey: RENDER_EXTERNAL_URL
