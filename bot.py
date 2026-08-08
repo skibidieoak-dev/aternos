@@ -98,6 +98,14 @@ async def on_ready():
     logger.info("Pronto para controlar o servidor Aternos")
 
 
+def safe_error_message(error: Exception) -> str:
+    detail = str(error).strip() or "sem detalhes"
+    for secret in (DISCORD_TOKEN, ATERNOS_PASSWORD, ATERNOS_SESSION):
+        if secret:
+            detail = detail.replace(secret, "[oculto]")
+    return f"{type(error).__name__}: {detail[:700]}"
+
+
 @bot.command(name="ajuda")
 async def ajuda(ctx: commands.Context):
     await ctx.send("Comandos disponíveis: `!ligar`, `!desligar` e `!status`.")
@@ -119,9 +127,9 @@ async def ligar(ctx: commands.Context):
 
         await asyncio.to_thread(server.start)
         await ctx.send("Comando enviado. O servidor está iniciando...")
-    except Exception:
+    except Exception as error:
         logger.exception("Erro ao ligar o servidor")
-        await ctx.send("Não foi possível ligar o servidor. Consulte os logs do Render.")
+        await ctx.send(f"Não foi possível ligar o servidor.\n`{safe_error_message(error)}`")
 
 
 @bot.command(name="desligar", help="Desliga o servidor do Aternos")
@@ -140,9 +148,9 @@ async def desligar(ctx: commands.Context):
 
         await asyncio.to_thread(server.stop)
         await ctx.send("Comando enviado. O servidor está desligando...")
-    except Exception:
+    except Exception as error:
         logger.exception("Erro ao desligar o servidor")
-        await ctx.send("Não foi possível desligar o servidor. Consulte os logs do Render.")
+        await ctx.send(f"Não foi possível desligar o servidor.\n`{safe_error_message(error)}`")
 
 
 @bot.command(name="status", help="Verifica o status atual do servidor do Aternos")
@@ -169,9 +177,9 @@ async def status(ctx: commands.Context):
         embed.add_field(name="Software/Versão", value=f"{software} {version}", inline=True)
         embed.add_field(name="Jogadores", value=f"{players_count}/{players_max}", inline=True)
         await ctx.send(embed=embed)
-    except Exception:
+    except Exception as error:
         logger.exception("Erro ao consultar status do servidor")
-        await ctx.send("Não foi possível consultar o servidor. Consulte os logs do Render.")
+        await ctx.send(f"Não foi possível consultar o servidor.\n`{safe_error_message(error)}`")
 
 
 def missing_environment_variables() -> list[str]:
