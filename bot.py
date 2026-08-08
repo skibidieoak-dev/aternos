@@ -56,7 +56,7 @@ def get_server():
     else:
         logger.info("Autenticando no Aternos usando usuário e senha")
         aternos.login(ATERNOS_USER, ATERNOS_PASSWORD)
-    servers = aternos.list_servers(cache=False)
+    servers = aternos.account.list_servers(cache=False)
     if not servers:
         return None
 
