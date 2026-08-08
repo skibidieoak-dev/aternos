@@ -46,6 +46,7 @@ Este repositório agora inclui um arquivo `render.yaml` que automatiza o deploy 
 | `DISCORD_TOKEN` | Token do seu bot Discord | `MTk4NjIyNDgzNTgxMjgwMzI4.Clwa7A...` |
 | `ATERNOS_USER` | Seu email/username do Aternos | `seu_email@example.com` |
 | `ATERNOS_PASSWORD` | Sua senha do Aternos | `sua_senha_segura` |
+| `ATERNOS_SESSION` | Sessão do Aternos; alternativa quando o login é bloqueado pelo Cloudflare | `opcional` |
 | `ATERNOS_SERVER_ADDRESS` | Endereço do seu servidor Aternos | `seu_servidor.aternos.me` |
 | `PYTHON_VERSION` | Versão compatível com `python-aternos` | `3.11.9` |
 | `SERVICE_URL` | URL pública usada pelo Cron Job | `https://aternos-bot.onrender.com` |
@@ -54,6 +55,8 @@ Este repositório agora inclui um arquivo `render.yaml` que automatiza o deploy 
 
 - **`bot.py`**: Código principal do bot Discord
 - **`ping.py`**: Script do cronjob que consulta `/health` e exige `SERVICE_URL`
+
+Se o log mostrar `CloudflareError: Unable to bypass Cloudflare protection`, configure `ATERNOS_SESSION` no Render. Ela é uma alternativa às credenciais de usuário e senha e deve ser tratada como segredo.
 - **`render.yaml`**: Configuração de infraestrutura para o Render
 - **`Procfile`**: Define como o Render deve iniciar o serviço
 - **`requirements.txt`**: Dependências Python necessárias

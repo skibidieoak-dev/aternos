@@ -13,6 +13,8 @@ services:
         sync: false
       - key: ATERNOS_PASSWORD
         sync: false
+      - key: ATERNOS_SESSION
+        sync: false
       - key: ATERNOS_SERVER_ADDRESS
         sync: false
 

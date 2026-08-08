@@ -13,6 +13,7 @@ load_dotenv()
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip().strip("\"'")
 ATERNOS_USER = os.getenv("ATERNOS_USER", "").strip()
 ATERNOS_PASSWORD = os.getenv("ATERNOS_PASSWORD", "").strip()
+ATERNOS_SESSION = os.getenv("ATERNOS_SESSION", "").strip().strip("\"'")
 ATERNOS_SERVER_ADDRESS = os.getenv("ATERNOS_SERVER_ADDRESS", "").strip().lower()
 
 logging.basicConfig(
@@ -45,12 +46,17 @@ def keep_alive() -> None:
 
 
 def get_server():
-    if not ATERNOS_USER or not ATERNOS_PASSWORD:
-        raise RuntimeError("ATERNOS_USER e ATERNOS_PASSWORD precisam estar configuradas")
+    if not ATERNOS_SESSION and (not ATERNOS_USER or not ATERNOS_PASSWORD):
+        raise RuntimeError("Configure ATERNOS_SESSION ou ATERNOS_USER e ATERNOS_PASSWORD")
 
     aternos = Client()
-    aternos.login(ATERNOS_USER, ATERNOS_PASSWORD)
-    servers = aternos.list_servers()
+    if ATERNOS_SESSION:
+        logger.info("Autenticando no Aternos usando ATERNOS_SESSION")
+        aternos.login_with_session(ATERNOS_SESSION)
+    else:
+        logger.info("Autenticando no Aternos usando usuário e senha")
+        aternos.login(ATERNOS_USER, ATERNOS_PASSWORD)
+    servers = aternos.list_servers(cache=False)
     if not servers:
         return None
 
@@ -169,16 +175,16 @@ async def status(ctx: commands.Context):
 
 
 def missing_environment_variables() -> list[str]:
-    return [
-        name
-        for name, value in {
-            "DISCORD_TOKEN": DISCORD_TOKEN,
-            "ATERNOS_USER": ATERNOS_USER,
-            "ATERNOS_PASSWORD": ATERNOS_PASSWORD,
-            "ATERNOS_SERVER_ADDRESS": ATERNOS_SERVER_ADDRESS,
-        }.items()
-        if not value
-    ]
+    missing = []
+    if not DISCORD_TOKEN:
+        missing.append("DISCORD_TOKEN")
+    if not ATERNOS_SESSION and not ATERNOS_USER:
+        missing.append("ATERNOS_USER ou ATERNOS_SESSION")
+    if not ATERNOS_SESSION and not ATERNOS_PASSWORD:
+        missing.append("ATERNOS_PASSWORD ou ATERNOS_SESSION")
+    if not ATERNOS_SERVER_ADDRESS:
+        missing.append("ATERNOS_SERVER_ADDRESS")
+    return missing
 
 
 def run_discord_bot() -> None:
