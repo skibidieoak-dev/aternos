@@ -48,7 +48,8 @@ def get_server():
     if not ATERNOS_USER or not ATERNOS_PASSWORD:
         raise RuntimeError("ATERNOS_USER e ATERNOS_PASSWORD precisam estar configuradas")
 
-    aternos = Client.from_credentials(ATERNOS_USER, ATERNOS_PASSWORD)
+    aternos = Client()
+    aternos.login(ATERNOS_USER, ATERNOS_PASSWORD)
     servers = aternos.list_servers()
     if not servers:
         return None
