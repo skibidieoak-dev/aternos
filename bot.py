@@ -2,8 +2,6 @@ import asyncio
 import logging
 import os
 import threading
-from typing import Optional
-
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
@@ -12,7 +10,7 @@ from python_aternos import Client
 
 load_dotenv()
 
-DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip()
+DISCORD_TOKEN = os.getenv("DISCORD_TOKEN", "").strip().strip("\"'")
 ATERNOS_USER = os.getenv("ATERNOS_USER", "").strip()
 ATERNOS_PASSWORD = os.getenv("ATERNOS_PASSWORD", "").strip()
 ATERNOS_SERVER_ADDRESS = os.getenv("ATERNOS_SERVER_ADDRESS", "").strip().lower()
@@ -70,6 +68,21 @@ async def fetch_server():
 intents = discord.Intents.default()
 intents.message_content = True
 bot = commands.Bot(command_prefix="!", intents=intents, help_command=None)
+
+
+@bot.event
+async def on_connect():
+    logger.info("Conexão com o Gateway do Discord estabelecida")
+
+
+@bot.event
+async def on_disconnect():
+    logger.warning("Bot desconectado do Gateway do Discord; tentando reconectar")
+
+
+@bot.event
+async def on_resumed():
+    logger.info("Sessão do Discord retomada")
 
 
 @bot.event
@@ -173,7 +186,7 @@ if __name__ == "__main__":
     try:
         validate_environment()
         keep_alive()
-        bot.run(DISCORD_TOKEN, log_handler=None)
+        bot.run(DISCORD_TOKEN)
     except Exception:
         logger.exception("Falha fatal na inicialização")
         raise
