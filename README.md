@@ -16,6 +16,7 @@ Este bot permite controlar o seu servidor do Aternos diretamente pelo chat do Di
 3. Escolha **Web Service**.
 4. Configure as seguintes opções:
    - **Runtime**: `Python 3`
+   - **Python version**: `3.11.9` (definida pelo arquivo `.python-version`)
    - **Build Command**: `pip install -r requirements.txt`
    - **Start Command**: `python bot.py`
 5. Adicione as **Environment Variables** (Variáveis de Ambiente) no Render:
@@ -33,7 +34,7 @@ Este repositório agora inclui um arquivo `render.yaml` que automatiza o deploy 
 1. Faça o push das mudanças para o GitHub.
 2. No Render, selecione **Infrastructure as Code** durante o setup.
 3. Aponte para o arquivo `render.yaml` neste repositório.
-4. Configure as variáveis de ambiente conforme descrito acima.
+4. Configure as variáveis do Web Service conforme descrito acima. No Cron Job, configure `SERVICE_URL` com a URL pública do Web Service, por exemplo `https://aternos-bot.onrender.com`.
 5. O Render criará automaticamente:
    - **Web Service**: Executa o bot Discord com Flask keep-alive
    - **Cron Job**: Faz ping na API a cada 5 minutos para manter o serviço acordado
@@ -46,11 +47,13 @@ Este repositório agora inclui um arquivo `render.yaml` que automatiza o deploy 
 | `ATERNOS_USER` | Seu email/username do Aternos | `seu_email@example.com` |
 | `ATERNOS_PASSWORD` | Sua senha do Aternos | `sua_senha_segura` |
 | `ATERNOS_SERVER_ADDRESS` | Endereço do seu servidor Aternos | `seu_servidor.aternos.me` |
+| `PYTHON_VERSION` | Versão compatível com `python-aternos` | `3.11.9` |
+| `SERVICE_URL` | URL pública usada pelo Cron Job | `https://aternos-bot.onrender.com` |
 
 ## Arquivos Importantes
 
 - **`bot.py`**: Código principal do bot Discord
-- **`ping.py`**: Script executado pelo cronjob para manter o serviço acordado
+- **`ping.py`**: Script do cronjob que consulta `/health` e exige `SERVICE_URL`
 - **`render.yaml`**: Configuração de infraestrutura para o Render
 - **`Procfile`**: Define como o Render deve iniciar o serviço
 - **`requirements.txt`**: Dependências Python necessárias

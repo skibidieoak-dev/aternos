@@ -5,6 +5,8 @@ services:
     buildCommand: pip install -r requirements.txt
     startCommand: python bot.py
     envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.9
       - key: DISCORD_TOKEN
         sync: false
       - key: ATERNOS_USER
@@ -18,11 +20,10 @@ services:
     name: aternos-bot-ping
     env: python
     schedule: "*/5 * * * *"
-    buildCommand: pip install requests
+    buildCommand: pip install -r requirements.txt
     startCommand: python ping.py
     envVars:
-      - key: RENDER_EXTERNAL_URL
-        fromService:
-          type: web
-          name: aternos-bot
-          envVarKey: RENDER_EXTERNAL_URL
+      - key: PYTHON_VERSION
+        value: 3.11.9
+      - key: SERVICE_URL
+        sync: false

@@ -1,17 +1,29 @@
+import logging
 import os
+import sys
+
 import requests
 
-def ping_server():
-    url = os.getenv("RENDER_EXTERNAL_URL")
-    if not url:
-        print("Erro: RENDER_EXTERNAL_URL não configurada. Não é possível fazer o ping.")
-        return
+logging.basicConfig(level=os.getenv("LOG_LEVEL", "INFO").upper())
+logger = logging.getLogger("aternos-ping")
 
+
+def ping_server() -> int:
+    base_url = os.getenv("SERVICE_URL", "").strip().rstrip("/")
+    if not base_url:
+        logger.error("SERVICE_URL não configurada no Cron Job")
+        return 1
+
+    url = f"{base_url}/health"
     try:
-        response = requests.get(url)
-        print(f"Ping em {url}: Status {response.status_code}")
-    except Exception as e:
-        print(f"Erro ao tentar pingar {url}: {e}")
+        response = requests.get(url, timeout=20)
+        response.raise_for_status()
+        logger.info("Ping bem-sucedido em %s: HTTP %s", url, response.status_code)
+        return 0
+    except requests.RequestException as exc:
+        logger.error("Falha ao fazer ping em %s: %s", url, exc)
+        return 1
+
 
 if __name__ == "__main__":
-    ping_server()
+    sys.exit(ping_server())
