@@ -1,7 +1,9 @@
 import os
+import threading
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from flask import Flask
 from python_aternos import Client
 
 # Carregar variáveis de ambiente
@@ -11,6 +13,22 @@ DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 ATERNOS_USER = os.getenv("ATERNOS_USER")
 ATERNOS_PASSWORD = os.getenv("ATERNOS_PASSWORD")
 ATERNOS_SERVER_ADDRESS = os.getenv("ATERNOS_SERVER_ADDRESS")
+
+# Servidor Flask para manter o bot acordado no Render (Keep-Alive)
+app = Flask('')
+
+@app.route('/')
+def home():
+    return "Bot do Aternos está online e funcionando 24/7!"
+
+def run_flask():
+    port = int(os.environ.get("PORT", 8080))
+    app.run(host='0.0.0.0', port=port)
+
+def keep_alive():
+    t = threading.Thread(target=run_flask)
+    t.daemon = True
+    t.start()
 
 # Configurar intents do Discord
 intents = discord.Intents.default()
@@ -25,7 +43,6 @@ def get_server():
         for serv in servers:
             if serv.address.lower() == ATERNOS_SERVER_ADDRESS.lower():
                 return serv
-        # Se não encontrar pelo endereço exato, retorna o primeiro se houver
         if servers:
             return servers[0]
     except Exception as e:
@@ -46,7 +63,6 @@ async def ligar(ctx):
             await ctx.send("❌ Servidor não encontrado ou erro nas credenciais do Aternos.")
             return
         
-        # Verificar o status atual
         serv.update()
         if serv.status == "online":
             await ctx.send("⚠️ O servidor já está **ligado**!")
@@ -90,7 +106,7 @@ async def status(ctx):
         version = serv.version
         players_count = f"{serv.players_count}/{serv.players_max}"
         
-        embed = discord.Embed(title="status do Servidor Aternos", color=discord.Color.green() if status_text == "online" else discord.Color.red())
+        embed = discord.Embed(title="Status do Servidor Aternos", color=discord.Color.green() if status_text == "online" else discord.Color.red())
         embed.add_field(name="Endereço", value=serv.address, inline=False)
         embed.add_field(name="Status", value=status_text.capitalize(), inline=True)
         embed.add_field(name="Software/Versão", value=f"{software} {version}", inline=True)
@@ -104,4 +120,7 @@ if __name__ == "__main__":
     if not DISCORD_TOKEN:
         print("Erro: DISCORD_TOKEN não encontrado nas variáveis de ambiente.")
     else:
+        # Inicia o servidor Flask em background para o Render
+        keep_alive()
+        # Inicia o bot do Discord
         bot.run(DISCORD_TOKEN)
